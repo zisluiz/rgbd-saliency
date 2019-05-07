@@ -233,7 +233,7 @@ void generateFillGapImages(std::string depth_dir, std::string rgb_dir, std::stri
         // use this to load 16-bit depth image (Kinect output format)
         depth_32FC1 = loadDepth(depth_dir+"/"+im_files.at(i));
       } else {
-        std::cout << "Please specify bit as 8-bit or 16-bit" << std::cout;
+        std::cout << "Please specify bit as 8-bit or 16-bit" << std::endl;
         return;
       }
 

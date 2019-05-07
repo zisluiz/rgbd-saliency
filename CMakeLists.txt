@@ -4,7 +4,7 @@ project(slic_saliency_test)
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS system filesystem thread chrono)
 # Set your opencv directory
-set(Caffe_DIR ./caffe/build)
+set(Caffe_DIR /usr/libs/caffe/build)
 find_package(Caffe REQUIRED NO_DEFAULT_PATH)
 
 find_package(OpenCV QUIET COMPONENTS core highgui imgproc imgcodecs)
