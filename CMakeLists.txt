@@ -23,12 +23,17 @@ set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -g -std=c++11")
 include_directories(
   ./caffe/build/include
   ./include
+  ./create_fill_gap/src/include
+  ./create_fill_gap/src/lbe
+  ./create_fill_gap/src/slic
   ${Caffe_INCLUDE_DIRS}
 )
+
+add_library ( FILLGAP ./create_fill_gap/src/fillgapcalc.cpp ./src/objectseg.cpp ./src/pointseg.cpp ./src/facade.cpp ./src/configprop.cpp ./create_fill_gap/src/lbe/lbe.cpp ./create_fill_gap/src/lbe/superpixels.cpp ./create_fill_gap/src/slic/SLIC.cpp)
 
 set(executable get_results)
 
 ## Declare a C++ executable
-add_executable(${executable}.bin test_main.cpp)
+add_executable(${executable}.bin src/test_main.cpp src/rgbdsaliency.cpp)
 set_target_properties(${executable}.bin PROPERTIES OUTPUT_NAME ${executable})
-target_link_libraries(${executable}.bin ${Caffe_LIBRARIES} ${Boost_LIBRARIES} ${OpenCV_LIBS})
+target_link_libraries(${executable}.bin ${Caffe_LIBRARIES} ${Boost_LIBRARIES} ${OpenCV_LIBS} FILLGAP)
