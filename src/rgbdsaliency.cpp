@@ -120,12 +120,15 @@ void RgbdSaliency::detectAndWriteSingle() {
 }
 
 void RgbdSaliency::detectAndWriteSingle(cv::Mat depth_image, cv::Mat rgb_image) {
+  cout << "Inside detectAndWriteSingle" << "\n";
   Caffe::set_mode(Caffe::Brew::GPU);
   Caffe::SetDevice(0);
   caffe_test_net.reset(new Net<float>(net_proto_path, caffe::TEST));
+  cout << "Inside detectAndWriteSingle 2" << "\n";
   caffe_test_net->CopyTrainedLayersFrom(net_binary_path);
-
+  cout << "Inside detectAndWriteSingle 3" << "\n";
   FillGapCalc *fillGapCalc = new FillGapCalc();
+  cout << "Inside detectAndWriteSingle4" << "\n";
   cv::Mat *results = fillGapCalc->generateFillGapSingle(depth_image, rgb_image);
 
   processImageAndWrite(true, rgb_image_path, rgb_image, depth_image, results[0], results[1]);
@@ -139,6 +142,8 @@ ObjectSeg RgbdSaliency::detectSingle(cv::Mat depth_image, cv::Mat rgb_image) {
   caffe_test_net.reset(new Net<float>(net_proto_path, caffe::TEST));
   caffe_test_net->CopyTrainedLayersFrom(net_binary_path);
 
+  cout << "Inside detectSingle";
+
   FillGapCalc *fillGapCalc = new FillGapCalc();
   cv::Mat *results = fillGapCalc->generateFillGapSingle(depth_image, rgb_image);
 
@@ -149,11 +154,15 @@ ObjectSeg RgbdSaliency::detectSingle(cv::Mat depth_image, cv::Mat rgb_image) {
 }
 
 ObjectSeg RgbdSaliency::processImageAndWrite(bool write, string rgb_path, Mat rgb_image, Mat depth_image, Mat fill_image, Mat gap_image) {
+  cout << "Inside processImageAndWrite";
 
   boost::chrono::system_clock::time_point start;
   start = boost::chrono::system_clock::now();
   fs::path savepath(save_dirpath);
-  fs::path rgb_path_p(rgb_path);
+  fs::path rgb_path_p;
+  
+  if (rgb_path != NULL)
+    rgb_path_p = fs::path(rgb_path);
 
   cv::Size original_size = cv::Size(rgb_image.cols, rgb_image.rows);
   cv::resize(rgb_image, rgb_image, cv::Size(fixed_size, fixed_size));
@@ -237,6 +246,7 @@ void RgbdSaliency::processWrite(boost::chrono::system_clock::time_point start, f
 
 ObjectSeg RgbdSaliency::processObjectSeg(boost::chrono::system_clock::time_point start, cv::Size original_size, const boost::shared_ptr<Blob<float>> slic_blob, const float* score_ptr) {
   Mat result(fixed_size, fixed_size, CV_8UC1);
+  cout << "Inside processObjectSeg";
   const float* slic_ptr = slic_blob->cpu_data();
   float score_sum = 0;
   int score_count = 0;

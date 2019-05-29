@@ -1,8 +1,6 @@
 #include <rgbdsaliency.h>
 
 int main(int argc, char *argv[]) {
-  cout << argc;
-
   if (argc == 8) {
     string net_proto_path(argv[1]);
     string net_binary_path(argv[2]);
@@ -22,7 +20,9 @@ int main(int argc, char *argv[]) {
       string save_dirpath = argv[5];
 
       RgbdSaliency *rgbdSaliency = new RgbdSaliency(net_proto_path, net_binary_path, rgb_dirpath, depth_dirpath, save_dirpath);
-      rgbdSaliency->detectAndWriteSingle();
+      Mat rgb_image = cv::imread(rgb_dirpath);
+      Mat depth_image = cv::imread(depth_dirpath);
+      rgbdSaliency->detectAndWriteSingle(depth_image, rgb_image);
   } else
     return -1;  
 

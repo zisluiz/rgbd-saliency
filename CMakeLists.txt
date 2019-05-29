@@ -1,5 +1,7 @@
-cmake_minimum_required(VERSION 2.8.3)
-project(slic_saliency_test)
+cmake_minimum_required(VERSION 3.9)
+project(slic_saliency_test VERSION 1.0.0)
+
+include(GNUInstallDirs)
 
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED COMPONENTS system filesystem thread chrono)
@@ -29,11 +31,19 @@ include_directories(
   ${Caffe_INCLUDE_DIRS}
 )
 
-add_library ( FILLGAP ./create_fill_gap/src/fillgapcalc.cpp ./src/objectseg.cpp ./src/pointseg.cpp ./src/facade.cpp ./src/configprop.cpp ./create_fill_gap/src/lbe/lbe.cpp ./create_fill_gap/src/lbe/superpixels.cpp ./create_fill_gap/src/slic/SLIC.cpp)
+add_library(rgbd_saliency SHARED src/rgbdsaliency.cpp ./src/objectseg.cpp ./src/pointseg.cpp ./src/facade.cpp ./src/configprop.cpp ./create_fill_gap/src/fillgapcalc.cpp ./create_fill_gap/src/lbe/lbe.cpp ./create_fill_gap/src/lbe/superpixels.cpp ./create_fill_gap/src/slic/SLIC.cpp)
+
+set_target_properties(rgbd_saliency PROPERTIES
+    VERSION ${PROJECT_VERSION}
+    SOVERSION 1
+    PUBLIC_HEADER ./include/facade.cpp)
+target_include_directories(rgbd_saliency PRIVATE .)
+
+target_link_libraries(rgbd_saliency ${Caffe_LIBRARIES} ${Boost_LIBRARIES} ${OpenCV_LIBS})
 
 set(executable get_results)
 
 ## Declare a C++ executable
-add_executable(${executable}.bin src/test_main.cpp src/rgbdsaliency.cpp)
+add_executable(${executable}.bin src/test_main.cpp)
 set_target_properties(${executable}.bin PROPERTIES OUTPUT_NAME ${executable})
-target_link_libraries(${executable}.bin ${Caffe_LIBRARIES} ${Boost_LIBRARIES} ${OpenCV_LIBS} FILLGAP)
+target_link_libraries(${executable}.bin rgbd_saliency ${Caffe_LIBRARIES} ${Boost_LIBRARIES} ${OpenCV_LIBS})

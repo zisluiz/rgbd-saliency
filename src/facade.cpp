@@ -10,14 +10,16 @@ class Facade
     private:
     string net_proto_path;
     string net_binary_path;
+    bool showDebug;
     RgbdSaliency *rgbdSaliency;
 };
 
 Facade::Facade(std::string configFilePath)
 {
     ConfigProperties *config = new ConfigProperties(configFilePath);
-    net_proto_path = std::stod(config->config["net_proto_path"]);
-    net_binary_path = std::stod(config->config["net_binary_path"]);
+    net_proto_path = config->config["net_proto_path"];
+    net_binary_path = config->config["net_binary_path"];
+    showDebug = config->config["show_debug"] == "true";
     delete config; 
 
     rgbdSaliency = new RgbdSaliency(net_proto_path, net_binary_path);

@@ -229,18 +229,24 @@ void FillGapCalc::generateFillGapImages(std::string depth_dir, std::string rgb_d
 }
 
 cv::Mat* FillGapCalc::generateFillGapSingle(cv::Mat depth_image, cv::Mat rgb_image) {
+    cout << "Inside generateFillGapSingle0" << "\n";
       // compute segmentation
     cv::Mat seg_32SC1 = getSLICOSegmentation(rgb_image);
+    cout << "Inside generateFillGapSingle1" << "\n";
 
     // compute and save lbe image
     cv::Mat fill_32FC3, gap_32FC3;
     std::vector<std::vector<double> > fill_list;
     std::vector<std::vector<double> > gap_list;
+    cout << "Inside generateFillGapSingle2" << "\n";
     lbe.computeFillGap(depth_image, seg_32SC1, fill_list, gap_list, n_partitions);
+    cout << "Inside generateFillGapSingle3" << "\n";
     std::vector<cv::Mat> fill_im_list = fillListToImageList(fill_list, seg_32SC1);
     std::vector<cv::Mat> gap_im_list = fillListToImageList(gap_list, seg_32SC1);
-
+    cout << "Inside generateFillGapSingle4" << "\n";
     cv::Mat *results = new cv::Mat[n_out*2];
+    cout << "Inside generateFillGapSingle5" << "\n";
+    
 
     int k = 0;
     for (int j=0; j<n_out; j++)
@@ -249,6 +255,8 @@ cv::Mat* FillGapCalc::generateFillGapSingle(cv::Mat depth_image, cv::Mat rgb_ima
       results[j+k+1] = gap_im_list.at(j);
       k++;
     }
+
+    cout << "Inside generateFillGapSingle6" << "\n";
 
     return results;
 }
