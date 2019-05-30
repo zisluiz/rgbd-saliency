@@ -12,6 +12,7 @@
 #include <boost/chrono.hpp>
 #include <ORUtils/gSLICr_defines.h>
 #include <objectseg.h>
+#include "fillgapcalc.h"
 
 namespace fs = boost::filesystem;
 using namespace std;
@@ -50,6 +51,7 @@ class RgbdSaliency
         string gap_dirpath;
         string save_dirpath;
 
+        FillGapCalc *fillGapCalc;
         double total_count = 0;        
         std::unique_ptr<Net<float>> caffe_test_net;
 };

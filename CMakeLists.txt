@@ -21,7 +21,7 @@ add_definitions(-DUSE_OPENCV)
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 # include_directories(include)
-set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -g -std=c++11")
+set(CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -g -lm -fPIC -std=c++11")
 include_directories(
   ./caffe/build/include
   ./include
@@ -32,12 +32,6 @@ include_directories(
 )
 
 add_library(rgbd_saliency SHARED src/rgbdsaliency.cpp ./src/objectseg.cpp ./src/pointseg.cpp ./src/facade.cpp ./src/configprop.cpp ./create_fill_gap/src/fillgapcalc.cpp ./create_fill_gap/src/lbe/lbe.cpp ./create_fill_gap/src/lbe/superpixels.cpp ./create_fill_gap/src/slic/SLIC.cpp)
-
-set_target_properties(rgbd_saliency PROPERTIES
-    VERSION ${PROJECT_VERSION}
-    SOVERSION 1
-    PUBLIC_HEADER ./include/facade.cpp)
-target_include_directories(rgbd_saliency PRIVATE .)
 
 target_link_libraries(rgbd_saliency ${Caffe_LIBRARIES} ${Boost_LIBRARIES} ${OpenCV_LIBS})
 

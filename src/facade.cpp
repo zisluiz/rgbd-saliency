@@ -26,14 +26,29 @@ Facade::Facade(std::string configFilePath)
 }
 
 ObjectSeg* Facade::segmentImage(const char* rgbFilePath, const char* depthFilePath, bool showDebug, char *numObjects) {
-    cv::Mat kinect_rgb_img = cv::imread(rgbFilePath);//,cv::IMREAD_UNCHANGED);
-    cv::Mat kinect_depth_img_mm = cv::imread(depthFilePath,cv::IMREAD_UNCHANGED);// in mm
+    cv::Mat kinect_rgb_img = cv::imread(rgbFilePath);
+    cv::Mat kinect_depth_img_mm = cv::imread(depthFilePath);
 
     int numResults = 1;
     ObjectSeg *results = new ObjectSeg[numResults];
     results[0] = rgbdSaliency->detectSingle(kinect_depth_img_mm, kinect_rgb_img);
+    if (showDebug)
+        cout << "Preparing to result " << "\n";
 
-    strcpy(numObjects, std::to_string(numResults).c_str());
+    //std::stringstream ss;
+    //ss << numResults;
+    //string strNumResults = ss.str();
+
+    //if (showDebug)
+    //    cout << "Resulting a string of " << strNumResults << "\n";
+
+    cout << "numObjects " << &numObjects << "\n";
+    
+    strcpy(numObjects, "23");
+    //strcpy(numObjects, "1");
+    cout << "numObjects " << &numObjects << "\n";
+
+    cout << "Resulting a string of " << numObjects << "\n";    
  
     if (showDebug)
         printf("Resulting a array of %d\n", numResults);
@@ -52,7 +67,9 @@ void Facade::cleanupObjects(ObjectSeg* objectToClean, char *numObjects) {
         }
 
         delete[] objectToClean;
-    }      
+    }   
+
+    delete rgbdSaliency;
 } 
 
 extern "C"

@@ -11,7 +11,7 @@ class FillGapCalc
     public:
         FillGapCalc();
         void generateFillGapImages(std::string depth_dir, std::string rgb_dir, std::string fill_dir, std::string gap_dir, std::string ext, int bit_cnt);
-        cv::Mat* generateFillGapSingle(cv::Mat depth_image, cv::Mat rgb_image);
+        std::unique_ptr<cv::Mat[]> generateFillGapSingle(cv::Mat depth_image, cv::Mat rgb_image);
     private:
         cv::Mat getSLICOSegmentation(cv::Mat &rgb_8UC3);
         std::vector<std::string> getExtFilesInDir ( std::string dir_path, std::string ext );

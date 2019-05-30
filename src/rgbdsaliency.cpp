@@ -1,5 +1,4 @@
 #include "rgbdsaliency.h"
-#include "fillgapcalc.h"
 
 RgbdSaliency::RgbdSaliency() {
 }
@@ -13,6 +12,7 @@ RgbdSaliency::RgbdSaliency(string net_proto_path, string net_binary_path, string
     this->fill_dirpath = fill_dirpath;
     this->gap_dirpath = gap_dirpath;
     this->save_dirpath = save_dirpath;
+    fillGapCalc = new FillGapCalc();
 }
 
 RgbdSaliency::RgbdSaliency(string net_proto_path, string net_binary_path, string rgb_image_path, string depth_image_path, string save_dirpath)
@@ -22,12 +22,14 @@ RgbdSaliency::RgbdSaliency(string net_proto_path, string net_binary_path, string
     this->rgb_image_path = rgb_image_path;
     this->depth_image_path = depth_image_path;
     this->save_dirpath = save_dirpath;
+    fillGapCalc = new FillGapCalc();
 }
 
 RgbdSaliency::RgbdSaliency(string net_proto_path, string net_binary_path)
 {
     this->net_proto_path = net_proto_path;
     this->net_binary_path = net_binary_path;
+    fillGapCalc = new FillGapCalc();
 }
 
 void RgbdSaliency::detect() {
@@ -111,10 +113,11 @@ void RgbdSaliency::detectAndWriteSingle() {
   Mat rgb_image = cv::imread(rgb_image_path);
   Mat depth_image = cv::imread(depth_image_path);
 
-  FillGapCalc *fillGapCalc = new FillGapCalc();
-  cv::Mat *results = fillGapCalc->generateFillGapSingle(depth_image, rgb_image);
+  std::unique_ptr<cv::Mat[]> results = fillGapCalc->generateFillGapSingle(depth_image, rgb_image);
 
   processImageAndWrite(true, rgb_image_path, rgb_image, depth_image, results[0], results[1]);
+
+  results.reset();
 
   cout <<  "AVG time : " << total_count << "s" << endl;    
 }
@@ -127,12 +130,13 @@ void RgbdSaliency::detectAndWriteSingle(cv::Mat depth_image, cv::Mat rgb_image) 
   cout << "Inside detectAndWriteSingle 2" << "\n";
   caffe_test_net->CopyTrainedLayersFrom(net_binary_path);
   cout << "Inside detectAndWriteSingle 3" << "\n";
-  FillGapCalc *fillGapCalc = new FillGapCalc();
+  
   cout << "Inside detectAndWriteSingle4" << "\n";
-  cv::Mat *results = fillGapCalc->generateFillGapSingle(depth_image, rgb_image);
-
+  std::unique_ptr<cv::Mat[]> results = fillGapCalc->generateFillGapSingle(depth_image, rgb_image);
+  cout << "Inside detectAndWriteSingle5: " << rgb_image_path << "\n";
   processImageAndWrite(true, rgb_image_path, rgb_image, depth_image, results[0], results[1]);
 
+  results.reset();
   cout <<  "AVG time : " << total_count << "s" << endl;    
 }
 
@@ -142,33 +146,32 @@ ObjectSeg RgbdSaliency::detectSingle(cv::Mat depth_image, cv::Mat rgb_image) {
   caffe_test_net.reset(new Net<float>(net_proto_path, caffe::TEST));
   caffe_test_net->CopyTrainedLayersFrom(net_binary_path);
 
-  cout << "Inside detectSingle";
+  cout << "Inside detectSingle" << endl;
 
-  FillGapCalc *fillGapCalc = new FillGapCalc();
-  cv::Mat *results = fillGapCalc->generateFillGapSingle(depth_image, rgb_image);
+  std::unique_ptr<cv::Mat[]> results = fillGapCalc->generateFillGapSingle(depth_image, rgb_image);
 
-  ObjectSeg obj = processImageAndWrite(false, NULL, rgb_image, depth_image, results[0], results[1]);
+  ObjectSeg obj = processImageAndWrite(false, "", rgb_image, depth_image, results[0], results[1]);
 
+  results.reset();
   cout <<  "AVG time : " << total_count << "s" << endl;  
   return obj;  
 }
 
 ObjectSeg RgbdSaliency::processImageAndWrite(bool write, string rgb_path, Mat rgb_image, Mat depth_image, Mat fill_image, Mat gap_image) {
-  cout << "Inside processImageAndWrite";
+  cout << "Inside processImageAndWrite" << endl;
 
   boost::chrono::system_clock::time_point start;
-  start = boost::chrono::system_clock::now();
-  fs::path savepath(save_dirpath);
-  fs::path rgb_path_p;
-  
-  if (rgb_path != NULL)
-    rgb_path_p = fs::path(rgb_path);
+  start = boost::chrono::system_clock::now(); 
+
+  cout << "Inside processImageAndWrite 1: " << rgb_path << endl;
 
   cv::Size original_size = cv::Size(rgb_image.cols, rgb_image.rows);
   cv::resize(rgb_image, rgb_image, cv::Size(fixed_size, fixed_size));
   cv::resize(depth_image, depth_image, cv::Size(fixed_size, fixed_size));
   cv::resize(fill_image, fill_image, cv::Size(fixed_size, fixed_size));
   cv::resize(gap_image, gap_image, cv::Size(fixed_size, fixed_size));
+
+  cout << "Inside processImageAndWrite 3" << endl;
 
   vector<Datum> input_rgb_datum;
   input_rgb_datum.emplace_back();
@@ -211,9 +214,13 @@ ObjectSeg RgbdSaliency::processImageAndWrite(bool write, string rgb_path, Mat rg
     caffe_test_net->blob_by_name("score");
   const float* score_ptr = score_blob->cpu_data();
 
-  if (write)
+  cout << "Inside processImageAndWrite F" << endl;
+
+  if (write) {
+    fs::path rgb_path_p(rgb_path);
+    fs::path savepath(save_dirpath);
     processWrite(start, rgb_path_p, savepath, original_size, slic_blob, score_ptr);
-  else
+  } else
     return processObjectSeg(start, original_size, slic_blob, score_ptr);
 }
 
@@ -246,7 +253,7 @@ void RgbdSaliency::processWrite(boost::chrono::system_clock::time_point start, f
 
 ObjectSeg RgbdSaliency::processObjectSeg(boost::chrono::system_clock::time_point start, cv::Size original_size, const boost::shared_ptr<Blob<float>> slic_blob, const float* score_ptr) {
   Mat result(fixed_size, fixed_size, CV_8UC1);
-  cout << "Inside processObjectSeg";
+  cout << "Inside processObjectSeg" << "\n";
   const float* slic_ptr = slic_blob->cpu_data();
   float score_sum = 0;
   int score_count = 0;
@@ -259,20 +266,31 @@ ObjectSeg RgbdSaliency::processObjectSeg(boost::chrono::system_clock::time_point
     }
   }
 
+  cout << "Inside processObjectSeg 2" << "\n";
+
   resize(result, result, original_size);
   std::vector<PointSeg*> points;
 
-  for (int i = 0; i < original_size.width; i++) {
-    for (int j = 0; j < original_size.height; j++) {
+  cout << "Inside processObjectSeg 3" << "\n";
+
+  for (int i = 0; i < original_size.height; i++) {
+    for (int j = 0; j < original_size.width; j++) {
+      //cout << "Printing result" << i << "," << j << "value: " << result.at<uchar>(i, j) << "\n";
+      
       if (result.at<uchar>(i, j) > 0) {
+        //cout << "Pushing back element " << i << "," << j << "value: " << result.at<uchar>(i, j) << "\n";
         points.push_back(new PointSeg(i, j, 0));
       }  
     }
   }
+
+  cout << "Inside processObjectSeg 4" << "\n";
   
   boost::chrono::duration<double> sec2 = boost::chrono::system_clock::now() - start;
   cout << "time : " << sec2.count() << "s" << endl;
   total_count += (double)sec2.count();
+
+  cout << "Inside processObjectSeg 5" << "\n";
 
   return ObjectSeg(1, (int) points.size(), points.front());
 }
