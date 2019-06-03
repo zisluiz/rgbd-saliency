@@ -41,14 +41,10 @@ ObjectSeg* Facade::segmentImage(const char* rgbFilePath, const char* depthFilePa
 
     //if (showDebug)
     //    cout << "Resulting a string of " << strNumResults << "\n";
-
-    cout << "numObjects " << &numObjects << "\n";
-    
-    strcpy(numObjects, "23");
+   
+    strcpy(numObjects, std::to_string(numResults).c_str());
     //strcpy(numObjects, "1");
-    cout << "numObjects " << &numObjects << "\n";
 
-    cout << "Resulting a string of " << numObjects << "\n";    
  
     if (showDebug)
         printf("Resulting a array of %d\n", numResults);
@@ -61,10 +57,16 @@ void Facade::cleanupObjects(ObjectSeg* objectToClean, char *numObjects) {
         int numObjts = atoi(numObjects);
 
         for(std::size_t objs=0; objs < numObjts; ++objs) {
+            if (showDebug)
+                printf("Cleaning object %d\n", objs);            
             if (objectToClean[objs].points) {
+                printf("Cleaning points of object %d\n", objs); 
                 delete[] objectToClean[objs].points;
             }
         }
+
+        if (showDebug)
+            printf("Cleaning array of objects\n"); 
 
         delete[] objectToClean;
     }   
