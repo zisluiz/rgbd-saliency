@@ -229,6 +229,7 @@ void FillGapCalc::generateFillGapImages(std::string depth_dir, std::string rgb_d
 }
 
 std::unique_ptr<cv::Mat[]> FillGapCalc::generateFillGapSingle(cv::Mat depth_image, cv::Mat rgb_image) {
+
       // compute segmentation
     cv::Mat seg_32SC1 = getSLICOSegmentation(rgb_image);
 

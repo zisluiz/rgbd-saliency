@@ -5,7 +5,7 @@ class Facade
 {
     public:
         Facade(std::string configFilePath);
-        ObjectSeg* segmentImage(const char* rgbFilePath, const char* depthFilePath, bool showDebug, char *numObjects);
+        ObjectSeg* segmentImage(const char* rgbFilePath, const char* depthFilePath, char *numObjects);
         void cleanupObjects(ObjectSeg* objectToClean, char *numObjects);
     private:
     string net_proto_path;
@@ -25,12 +25,21 @@ Facade::Facade(std::string configFilePath)
     rgbdSaliency = new RgbdSaliency(net_proto_path, net_binary_path);
 }
 
-ObjectSeg* Facade::segmentImage(const char* rgbFilePath, const char* depthFilePath, bool showDebug, char *numObjects) {
+ObjectSeg* Facade::segmentImage(const char* rgbFilePath, const char* depthFilePath, char *numObjects) {
+    if (showDebug) {
+        cout << "RGB File to read: " << rgbFilePath << "\n";
+        cout << "DEPTH File to read: " << depthFilePath << "\n";
+    }
+
     cv::Mat kinect_rgb_img = cv::imread(rgbFilePath);
     cv::Mat kinect_depth_img_mm = cv::imread(depthFilePath);
 
     int numResults = 1;
     ObjectSeg *results = new ObjectSeg[numResults];
+
+    if (showDebug)
+        cout << "Starting detection" << "\n";
+
     results[0] = rgbdSaliency->detectSingle(kinect_depth_img_mm, kinect_rgb_img);
     if (showDebug)
         cout << "Preparing to result " << "\n";
@@ -69,19 +78,17 @@ void Facade::cleanupObjects(ObjectSeg* objectToClean, char *numObjects) {
             printf("Cleaning array of objects\n"); 
 
         delete[] objectToClean;
-    }   
-
-    delete rgbdSaliency;
+    }
 } 
 
 extern "C"
 {   
     Facade* Facade_new(const char* configFilePath) {return new Facade(std::string(configFilePath));}
-    ObjectSeg* Facade_segmentImage(Facade* facade, const char* rgbFilePath, const char* depthFilePath, bool showDebug, char *numObjects) {
-        return facade->segmentImage(rgbFilePath, depthFilePath, showDebug, numObjects);
+    ObjectSeg* Facade_segmentImage(Facade* facade, const char* rgbFilePath, const char* depthFilePath, char *numObjects) {
+        return facade->segmentImage(rgbFilePath, depthFilePath, numObjects);
     }
 
     void Facade_cleanupObjects(Facade* facade, ObjectSeg* objectToClean, char *numObjects) {
         facade->cleanupObjects(objectToClean, numObjects);
-    }      
+    }
 }

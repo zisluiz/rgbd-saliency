@@ -36,8 +36,8 @@ class RgbdSaliency
         void CustomResize(const Mat& img, Mat& output, cv::Size size);
         void CustomCVMatToDatum(const cv::Mat& cv_img, Datum* datum);
         void CustomDepthCVMatToDatum(const cv::Mat& cv_img, Datum* datum); 
-        void processWrite(boost::chrono::system_clock::time_point start, fs::path rgb_path_p, fs::path savepath, cv::Size original_size, const boost::shared_ptr<Blob<float>> slic_blob, const float* score_ptr);
-        ObjectSeg processObjectSeg(boost::chrono::system_clock::time_point start, cv::Size original_size, const boost::shared_ptr<Blob<float>> slic_blob, const float* score_ptr);
+        void processWrite(fs::path rgb_path_p, fs::path savepath, cv::Size original_size, const boost::shared_ptr<Blob<float>> slic_blob, const float* score_ptr);
+        ObjectSeg processObjectSeg(cv::Size original_size, const boost::shared_ptr<Blob<float>> slic_blob, const float* score_ptr);
 
         float MEAN_BGR[3] = {104, 117, 123};
         const int fixed_size = 324;
