@@ -1,6 +1,7 @@
 #include "include/fillgapcalc.h"
 
-FillGapCalc::FillGapCalc() {
+FillGapCalc::FillGapCalc(bool showDebug) {
+  this->showDebug = showDebug;
   n_out = std::ceil(n_partitions / 3.0);
   // lbe computation object
   lbe = SaliencyLBE(n_partitions);    
@@ -229,6 +230,8 @@ void FillGapCalc::generateFillGapImages(std::string depth_dir, std::string rgb_d
 }
 
 std::unique_ptr<cv::Mat[]> FillGapCalc::generateFillGapSingle(cv::Mat depth_image, cv::Mat rgb_image) {
+    if (showDebug)
+        cout << "Processing SLICOSegmentation" << "\n";  
 
       // compute segmentation
     cv::Mat seg_32SC1 = getSLICOSegmentation(rgb_image);
@@ -237,6 +240,8 @@ std::unique_ptr<cv::Mat[]> FillGapCalc::generateFillGapSingle(cv::Mat depth_imag
     cv::Mat fill_32FC3, gap_32FC3;
     std::vector<std::vector<double> > fill_list;
     std::vector<std::vector<double> > gap_list;
+    if (showDebug)
+        cout << "Computing fillgap" << "\n";      
     lbe.computeFillGap(depth_image, seg_32SC1, fill_list, gap_list, n_partitions);
     std::vector<cv::Mat> fill_im_list = fillListToImageList(fill_list, seg_32SC1);
     std::vector<cv::Mat> gap_im_list = fillListToImageList(gap_list, seg_32SC1);

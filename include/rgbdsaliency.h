@@ -24,9 +24,9 @@ class RgbdSaliency
 {
     public:
         RgbdSaliency();
-        RgbdSaliency(string net_proto_path, string net_binary_path);
-        RgbdSaliency(string net_proto_path, string net_binary_path, string rgb_image_path, string depth_image_path, string save_dirpath);
-        RgbdSaliency(string net_proto_path, string net_binary_path, string rgb_dirpath, string depth_dirpath, string fill_dirpath, string gap_dirpath, string save_dirpath);
+        RgbdSaliency(bool showDebug, string net_proto_path, string net_binary_path);
+        RgbdSaliency(bool showDebug, string net_proto_path, string net_binary_path, string rgb_image_path, string depth_image_path, string save_dirpath);
+        RgbdSaliency(bool showDebug, string net_proto_path, string net_binary_path, string rgb_dirpath, string depth_dirpath, string fill_dirpath, string gap_dirpath, string save_dirpath);
         void detect();
         void detectAndWriteSingle();
         void detectAndWriteSingle(cv::Mat depth_image, cv::Mat rgb_image);
@@ -41,6 +41,7 @@ class RgbdSaliency
 
         float MEAN_BGR[3] = {104, 117, 123};
         const int fixed_size = 324;
+        bool showDebug;
         string net_proto_path;
         string net_binary_path;
         string rgb_dirpath;

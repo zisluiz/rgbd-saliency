@@ -9,7 +9,7 @@
 class FillGapCalc
 {
     public:
-        FillGapCalc();
+        FillGapCalc(bool showDebug);
         void generateFillGapImages(std::string depth_dir, std::string rgb_dir, std::string fill_dir, std::string gap_dir, std::string ext, int bit_cnt);
         std::unique_ptr<cv::Mat[]> generateFillGapSingle(cv::Mat depth_image, cv::Mat rgb_image);
     private:
@@ -21,6 +21,7 @@ class FillGapCalc
         std::vector<cv::Mat> fillListToImList(std::vector<std::vector<double> > fill_list, cv::Mat seg_32SC1);
         std::vector<cv::Mat> fillListToImageList(std::vector<std::vector<double> > fill_list, cv::Mat seg_32SC1);
 
+        bool showDebug;
         int n_partitions = 3;
         int n_out;
         // lbe computation object

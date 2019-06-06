@@ -31,7 +31,7 @@ include_directories(
   ${Caffe_INCLUDE_DIRS}
 )
 
-add_library(rgbd_saliency SHARED src/rgbdsaliency.cpp ./src/objectseg.cpp ./src/pointseg.cpp ./src/facade.cpp ./src/configprop.cpp ./create_fill_gap/src/fillgapcalc.cpp ./create_fill_gap/src/lbe/lbe.cpp ./create_fill_gap/src/lbe/superpixels.cpp ./create_fill_gap/src/slic/SLIC.cpp)
+add_library(rgbd_saliency SHARED src/rgbdsaliency.cpp ./src/objectseg.cpp ./src/pointseg.cpp ./src/facade2.cpp ./src/configprop.cpp ./create_fill_gap/src/fillgapcalc.cpp ./create_fill_gap/src/lbe/lbe.cpp ./create_fill_gap/src/lbe/superpixels.cpp ./create_fill_gap/src/slic/SLIC.cpp)
 
 target_link_libraries(rgbd_saliency ${Caffe_LIBRARIES} ${Boost_LIBRARIES} ${OpenCV_LIBS})
 

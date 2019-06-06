@@ -31,11 +31,26 @@ void SaliencyLBE::computeFillGap(const cv::Mat &depth_32FC1, const cv::Mat &seg_
     double r = 0.5*cv::norm(cv::Vec2d(seg_32SC1.rows,seg_32SC1.cols));
     fill_list.clear();
     gap_list.clear();
+    std::vector<std::thread> threadVector;
     for (int id=0; id<m_superpixels->size(); id++)
     {
         std::vector<int> neighbours = m_superpixels->getNeighbours(id, r);
-        fill_list.push_back(computeFillScoreList(id, neighbours));
-        gap_list.push_back(computeGapScoreList(id, neighbours));
+        std::promise<std::vector<double>> promiseFillObj;
+        std::future<std::vector<double>> futureFillObj = promiseFillObj.get_future();
+        std::promise<std::vector<double>> promiseGapObj;
+        std::future<std::vector<double>> futureGapObj = promiseGapObj.get_future();  
+        threadVector.emplace_back(std::thread(&SaliencyLBE::computeFillScoreList, this, &promiseFillObj, id, neighbours));     
+        threadVector.emplace_back(std::thread(&SaliencyLBE::computeGapScoreList, this, &promiseGapObj, id, neighbours));
+        fill_list.push_back(futureFillObj.get());
+        gap_list.push_back(futureGapObj.get());
+        
+        //fill_list.push_back(computeFillScoreList(id, neighbours));        
+        //gap_list.push_back(computeGapScoreList(id, neighbours));
+    }
+
+    for(auto& t: threadVector)
+    {
+        t.detach();
     }
 }
 
@@ -112,7 +127,7 @@ double SaliencyLBE::getGapScore(std::vector<double> &angles)
     return 1.0 - 0.5 * max_gap / CV_PI;
 }
 
-std::vector<double> SaliencyLBE::computeFillScoreList(int id, std::vector<int> neighbours)
+void SaliencyLBE::computeFillScoreList(std::promise<std::vector<double>> *promObj, int id, std::vector<int> neighbours)
 {
     PolarOccurenceHistogram hist(32);
     std::vector<std::vector<double> > neighbourhood_partition = partitionNeighbours(id, neighbours, m_superpixels->getDepthSD(id)/m_n);
@@ -126,7 +141,7 @@ std::vector<double> SaliencyLBE::computeFillScoreList(int id, std::vector<int> n
         }
         fill_score_list.push_back(hist.getFillRatio());
     }
-    return fill_score_list;
+    promObj->set_value(fill_score_list);
 }
 
 double SaliencyLBE::computeFillScore(int id, std::vector<int> neighbours)
@@ -163,7 +178,7 @@ double SaliencyLBE::computeGapScore(int id, std::vector<int> neighbours)
     return gap_score / m_n;
 }
 
-std::vector<double> SaliencyLBE::computeGapScoreList(int id, std::vector<int> neighbours)
+void SaliencyLBE::computeGapScoreList(std::promise<std::vector<double>> *promObj, int id, std::vector<int> neighbours)
 {
     PolarOccurenceHistogram hist(32);
     std::vector<std::vector<double> > neighbourhood_partition = partitionNeighbours(id, neighbours, m_superpixels->getDepthSD()/m_n);
@@ -176,7 +191,7 @@ std::vector<double> SaliencyLBE::computeGapScoreList(int id, std::vector<int> ne
                               neighbourhood_partition.at(i).end());
         gap_score_list.push_back(getGapScore(background_set));
     }
-    return gap_score_list;
+    promObj->set_value(gap_score_list);
 }
 
 

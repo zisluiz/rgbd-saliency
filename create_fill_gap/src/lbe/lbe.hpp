@@ -17,6 +17,8 @@
 #include <memory>
 #include <opencv2/opencv.hpp>
 #include "superpixels.hpp"
+#include <thread>
+#include <future>
 
 // computes saliency map by measuring local background enclosure
 // Example:
@@ -68,10 +70,10 @@ private:
     
     // angular fill distribution function
     double computeFillScore(int id, std::vector<int> neighbours);
-    std::vector<double> computeFillScoreList(int id, std::vector<int> neighbours);
+    void computeFillScoreList(std::promise<std::vector<double>> *promObj, int id, std::vector<int> neighbours);
     // angular gap distribution function
     double computeGapScore(int id, std::vector<int> neighbours);
-    std::vector<double> computeGapScoreList(int id, std::vector<int> neighbours);
+    void computeGapScoreList(std::promise<std::vector<double>> *promObj, int id, std::vector<int> neighbours);
     // partition neighbours based on depth difference with candidate patch
     std::vector<std::vector<double> > partitionNeighbours(int id, std::vector<int> neighbours, double partition_size);
     // compute depth standard deviation of patches

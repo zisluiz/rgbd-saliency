@@ -3,8 +3,9 @@
 RgbdSaliency::RgbdSaliency() {
 }
 
-RgbdSaliency::RgbdSaliency(string net_proto_path, string net_binary_path, string rgb_dirpath, string depth_dirpath, string fill_dirpath, string gap_dirpath, string save_dirpath)
+RgbdSaliency::RgbdSaliency(bool showDebug, string net_proto_path, string net_binary_path, string rgb_dirpath, string depth_dirpath, string fill_dirpath, string gap_dirpath, string save_dirpath)
 {
+  this->showDebug = showDebug;
   this->net_proto_path = net_proto_path;
   this->net_binary_path = net_binary_path;
   this->rgb_dirpath = rgb_dirpath;
@@ -12,7 +13,7 @@ RgbdSaliency::RgbdSaliency(string net_proto_path, string net_binary_path, string
   this->fill_dirpath = fill_dirpath;
   this->gap_dirpath = gap_dirpath;
   this->save_dirpath = save_dirpath;
-  fillGapCalc = new FillGapCalc();
+  fillGapCalc = new FillGapCalc(showDebug);
 
   Caffe::set_mode(Caffe::Brew::GPU);
   Caffe::SetDevice(0);
@@ -20,14 +21,15 @@ RgbdSaliency::RgbdSaliency(string net_proto_path, string net_binary_path, string
   caffe_test_net->CopyTrainedLayersFrom(net_binary_path);    
 }
 
-RgbdSaliency::RgbdSaliency(string net_proto_path, string net_binary_path, string rgb_image_path, string depth_image_path, string save_dirpath)
+RgbdSaliency::RgbdSaliency(bool showDebug, string net_proto_path, string net_binary_path, string rgb_image_path, string depth_image_path, string save_dirpath)
 {
+  this->showDebug = showDebug;
   this->net_proto_path = net_proto_path;
   this->net_binary_path = net_binary_path;
   this->rgb_image_path = rgb_image_path;
   this->depth_image_path = depth_image_path;
   this->save_dirpath = save_dirpath;
-  fillGapCalc = new FillGapCalc();
+  fillGapCalc = new FillGapCalc(showDebug);
 
   Caffe::set_mode(Caffe::Brew::GPU);
   Caffe::SetDevice(0);
@@ -35,11 +37,12 @@ RgbdSaliency::RgbdSaliency(string net_proto_path, string net_binary_path, string
   caffe_test_net->CopyTrainedLayersFrom(net_binary_path);       
 }
 
-RgbdSaliency::RgbdSaliency(string net_proto_path, string net_binary_path)
+RgbdSaliency::RgbdSaliency(bool showDebug, string net_proto_path, string net_binary_path)
 {
+  this->showDebug = showDebug;
   this->net_proto_path = net_proto_path;
   this->net_binary_path = net_binary_path;
-  fillGapCalc = new FillGapCalc();
+  fillGapCalc = new FillGapCalc(showDebug);
 
   Caffe::set_mode(Caffe::Brew::GPU);
   Caffe::SetDevice(0);
@@ -145,6 +148,8 @@ ObjectSeg RgbdSaliency::detectSingle(cv::Mat depth_image, cv::Mat rgb_image) {
 }
 
 ObjectSeg RgbdSaliency::processImageAndWrite(bool write, string rgb_path, Mat rgb_image, Mat depth_image, Mat fill_image, Mat gap_image) {
+    if (showDebug)
+        cout << "Processing rgb, depth, fill and gap images: " << "\n";    
   //boost::chrono::system_clock::time_point start;
   //start = boost::chrono::system_clock::now(); 
 
@@ -204,6 +209,8 @@ ObjectSeg RgbdSaliency::processImageAndWrite(bool write, string rgb_path, Mat rg
 }
 
 void RgbdSaliency::processWrite(fs::path rgb_path_p, fs::path savepath, cv::Size original_size, const boost::shared_ptr<Blob<float>> slic_blob, const float* score_ptr) {
+    if (showDebug)
+        cout << "Processing write result: " << "\n";    
   Mat result(fixed_size, fixed_size, CV_8UC1);
   const float* slic_ptr = slic_blob->cpu_data();
   float score_sum = 0;
@@ -231,6 +238,8 @@ void RgbdSaliency::processWrite(fs::path rgb_path_p, fs::path savepath, cv::Size
 }
 
 ObjectSeg RgbdSaliency::processObjectSeg(cv::Size original_size, const boost::shared_ptr<Blob<float>> slic_blob, const float* score_ptr) {
+    if (showDebug)
+        cout << "Processing object result: " << "\n";  
   Mat result(fixed_size, fixed_size, CV_8UC1);
   const float* slic_ptr = slic_blob->cpu_data();
   float score_sum = 0;
