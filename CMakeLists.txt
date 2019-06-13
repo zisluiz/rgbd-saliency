@@ -4,7 +4,8 @@ project(slic_saliency_test VERSION 1.0.0)
 include(GNUInstallDirs)
 
 ## System dependencies are found with CMake's conventions
-find_package(Boost REQUIRED COMPONENTS system filesystem thread chrono)
+find_package(PythonLibs 3 REQUIRED)
+find_package(Boost REQUIRED COMPONENTS system filesystem thread chrono python3)
 # Set your opencv directory
 set(Caffe_DIR /usr/libs/caffe/build)
 find_package(Caffe REQUIRED NO_DEFAULT_PATH)
@@ -29,15 +30,19 @@ include_directories(
   ./create_fill_gap/src/lbe
   ./create_fill_gap/src/slic
   ${Caffe_INCLUDE_DIRS}
+  ${PYTHON_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
 )
 
-add_library(rgbd_saliency SHARED src/rgbdsaliency.cpp ./src/objectseg.cpp ./src/pointseg.cpp ./src/facade2.cpp ./src/configprop.cpp ./create_fill_gap/src/fillgapcalc.cpp ./create_fill_gap/src/lbe/lbe.cpp ./create_fill_gap/src/lbe/superpixels.cpp ./create_fill_gap/src/slic/SLIC.cpp)
+message(STATUS "PYTHON_LIBRARIES = ${PYTHON_LIBRARIES}")
 
-target_link_libraries(rgbd_saliency ${Caffe_LIBRARIES} ${Boost_LIBRARIES} ${OpenCV_LIBS})
+add_library(rgbd_saliency SHARED src/rgbdsaliency.cpp ./src/objectseg.cpp ./src/pointseg.cpp ./src/facade2.cpp ./src/configprop.cpp ./src/pyboost_cv2_converter.cpp ./src/pyboost_cv3_converter.cpp ./src/pyboost_cv4_converter.cpp ./create_fill_gap/src/fillgapcalc.cpp ./create_fill_gap/src/lbe/lbe.cpp ./create_fill_gap/src/lbe/superpixels.cpp ./create_fill_gap/src/slic/SLIC.cpp)
+
+target_link_libraries(rgbd_saliency ${Caffe_LIBRARIES} ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} ${OpenCV_LIBS})
 
 set(executable get_results)
 
 ## Declare a C++ executable
 add_executable(${executable}.bin src/test_main.cpp)
 set_target_properties(${executable}.bin PROPERTIES OUTPUT_NAME ${executable})
-target_link_libraries(${executable}.bin rgbd_saliency ${Caffe_LIBRARIES} ${Boost_LIBRARIES} ${OpenCV_LIBS})
+target_link_libraries(${executable}.bin rgbd_saliency ${Caffe_LIBRARIES} ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} ${OpenCV_LIBS})

@@ -4,7 +4,7 @@ ObjectSeg::ObjectSeg() {
 
 }
 
-ObjectSeg::ObjectSeg(int id, int pointsLength, PointSeg *points)
+ObjectSeg::ObjectSeg(int id, int pointsLength, boost::python::list points)
 {
     this->id = id;
     this->pointsLength = pointsLength;

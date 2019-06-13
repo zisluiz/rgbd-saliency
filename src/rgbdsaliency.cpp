@@ -153,11 +153,23 @@ ObjectSeg RgbdSaliency::processImageAndWrite(bool write, string rgb_path, Mat rg
   //boost::chrono::system_clock::time_point start;
   //start = boost::chrono::system_clock::now(); 
 
+    if (showDebug)
+        cout << "Fixed size: " << fixed_size << "\n";    
+
   cv::Size original_size = cv::Size(rgb_image.cols, rgb_image.rows);
   cv::resize(rgb_image, rgb_image, cv::Size(fixed_size, fixed_size));
+    if (showDebug)
+        cout << "Resized rgb: " << "\n";    
+
   cv::resize(depth_image, depth_image, cv::Size(fixed_size, fixed_size));
+    if (showDebug)
+        cout << "Depth rgb: " << "\n";      
   cv::resize(fill_image, fill_image, cv::Size(fixed_size, fixed_size));
+      if (showDebug)
+        cout << "Fill rgb: " << "\n";    
   cv::resize(gap_image, gap_image, cv::Size(fixed_size, fixed_size));
+    if (showDebug)
+        cout << "Gap rgb: " << "\n";      
 
   vector<Datum> input_rgb_datum;
   input_rgb_datum.emplace_back();
@@ -258,7 +270,8 @@ ObjectSeg RgbdSaliency::processObjectSeg(cv::Size original_size, const boost::sh
   int rows = s.height;
   int cols = s.width;  
 
-  PointSeg *points = (PointSeg*) malloc((rows*cols) * sizeof(PointSeg));
+  //PointSeg *points = (PointSeg*) malloc((rows*cols) * sizeof(PointSeg));
+  boost::python::list points;
   int numPoints = 0;
 
   for (int i = 0; i < cols; i++) {
@@ -268,7 +281,7 @@ ObjectSeg RgbdSaliency::processObjectSeg(cv::Size original_size, const boost::sh
       
       if (color > 0) {
         //cout << "Pushing back element " << j << "," << i << "value: " << color << "\n";
-        points[numPoints] = PointSeg(i, j, 0);
+        points.append(PointSeg(i, j, 0));
         numPoints++;
       }  
     }
@@ -278,7 +291,8 @@ ObjectSeg RgbdSaliency::processObjectSeg(cv::Size original_size, const boost::sh
   //cout << "time : " << sec2.count() << "s" << endl;
   //total_count += (double)sec2.count();
 
-  points = (PointSeg*) realloc(points, numPoints * sizeof(PointSeg));
+  //points = (PointSeg*) realloc(points, numPoints * sizeof(PointSeg));
+  //return ObjectSeg(1, numPoints , points);
   return ObjectSeg(1, numPoints , points);
 }
 
