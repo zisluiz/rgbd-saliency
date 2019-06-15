@@ -16,7 +16,6 @@
 #include <opencv2/core/core.hpp>
 #include <boost/python.hpp>
 #include <cstdio>
-#include <iostream>
 
 namespace pbcvt{
 

@@ -11,7 +11,6 @@
 #if CV_VERSION_MAJOR == 3
 namespace pbcvt {
 using namespace cv;
-using namespace std;
 //===================   ERROR HANDLING     =========================================================
 
 static int failmsg(const char *fmt, ...) {
@@ -151,22 +150,16 @@ PyObject* fromMatToNDArray(const Mat& m) {
 }
 
 Mat fromNDArrayToMat(PyObject* o) {	
-	std::cout << "Entrou em fromNDArrayToMat" << "\n";
 	cv::Mat m;
 	bool allowND = true;
-	std::cout << "Pré PyArray_Check " << "\n";
 	if (!PyArray_Check(o)) {
-		std::cout << "failed 1" << "\n";
 		failmsg("argument is not a numpy array");
 		if (!m.data)
 			m.allocator = &g_numpyAllocator;
 	} else {
-		std::cout << "Entrou em fromNDArrayToMat 00" << "\n";
 		PyArrayObject* oarr = (PyArrayObject*) o;
-		std::cout << "Entrou em fromNDArrayToMat 1" << "\n";
 		bool needcopy = false, needcast = false;
 		int typenum = PyArray_TYPE(oarr), new_typenum = typenum;
-		std::cout << "Entrou em fromNDArrayToMat 11" << "\n";
 		int type = typenum == NPY_UBYTE ? CV_8U : typenum == NPY_BYTE ? CV_8S :
 					typenum == NPY_USHORT ? CV_16U :
 					typenum == NPY_SHORT ? CV_16S :
@@ -174,7 +167,6 @@ Mat fromNDArrayToMat(PyObject* o) {
 					typenum == NPY_INT32 ? CV_32S :
 					typenum == NPY_FLOAT ? CV_32F :
 					typenum == NPY_DOUBLE ? CV_64F : -1;
-		std::cout << "Entrou em fromNDArrayToMat 2" << "\n";
 		if (type < 0) {
 			if (typenum == NPY_INT64 || typenum == NPY_UINT64
 					|| type == NPY_LONG) {
@@ -192,7 +184,6 @@ Mat fromNDArrayToMat(PyObject* o) {
 		const int CV_MAX_DIM = 32;
 #endif
 
-std::cout << "Entrou em fromNDArrayToMat 3" << "\n";
 		int ndims = PyArray_NDIM(oarr);
 		if (ndims >= CV_MAX_DIM) {
 			failmsg("Dimensionality of argument is too high");
@@ -207,7 +198,7 @@ std::cout << "Entrou em fromNDArrayToMat 3" << "\n";
 		const npy_intp* _sizes = PyArray_DIMS(oarr);
 		const npy_intp* _strides = PyArray_STRIDES(oarr);
 		bool ismultichannel = ndims == 3 && _sizes[2] <= CV_CN_MAX;
-std::cout << "Entrou em fromNDArrayToMat 4" << "\n";
+
 		for (int i = ndims - 1; i >= 0 && !needcopy; i--) {
 			// these checks handle cases of
 			//  a) multi-dimensional (ndims > 2) arrays, as well as simpler 1- and 2-dimensional cases
@@ -221,7 +212,6 @@ std::cout << "Entrou em fromNDArrayToMat 4" << "\n";
 		if (ismultichannel && _strides[1] != (npy_intp) elemsize * _sizes[2])
 			needcopy = true;
 
-std::cout << "Entrou em fromNDArrayToMat 5" << "\n";
 		if (needcopy) {
 
 			if (needcast) {
@@ -247,8 +237,6 @@ std::cout << "Entrou em fromNDArrayToMat 5" << "\n";
 			ndims++;
 		}
 
-		std::cout << "Entrou em fromNDArrayToMat 6" << "\n";
-
 		if (ismultichannel) {
 			ndims--;
 			type |= CV_MAKETYPE(0, size[2]);
@@ -268,7 +256,6 @@ std::cout << "Entrou em fromNDArrayToMat 5" << "\n";
 		}
 		m.allocator = &g_numpyAllocator;
 	}
-	std::cout << "Saindo de fromNDArrayToMat" << "\n";
 	return m;
 }
 

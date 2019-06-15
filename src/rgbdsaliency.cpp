@@ -114,7 +114,7 @@ void RgbdSaliency::detect() {
     processImageAndWrite(true, rgb_filenames[imgidx], rgb_image, depth_image, fill_image, gap_image);
   }
 
-  cout <<  "AVG time : " << total_count / total_num << "s" << endl;    
+  //cout <<  "AVG time : " << total_count / total_num << "s" << endl;    
 }
 
 void RgbdSaliency::detectAndWriteSingle() {
@@ -124,18 +124,16 @@ void RgbdSaliency::detectAndWriteSingle() {
   std::unique_ptr<cv::Mat[]> results = fillGapCalc->generateFillGapSingle(depth_image, rgb_image);
 
   processImageAndWrite(true, rgb_image_path, rgb_image, depth_image, results[0], results[1]);
-
   results.reset();
 
-  cout <<  "AVG time : " << total_count << "s" << endl;    
+  //cout <<  "AVG time : " << total_count << "s" << endl;    
 }
 
 void RgbdSaliency::detectAndWriteSingle(cv::Mat depth_image, cv::Mat rgb_image) {
   std::unique_ptr<cv::Mat[]> results = fillGapCalc->generateFillGapSingle(depth_image, rgb_image);
-  processImageAndWrite(true, rgb_image_path, rgb_image, depth_image, results[0], results[1]);
-
+  processImageAndWrite(true, rgb_image_path, rgb_image, depth_image, results[0], results[1]);  
   results.reset();
-  cout <<  "AVG time : " << total_count << "s" << endl;    
+  //cout <<  "AVG time : " << total_count << "s" << endl;    
 }
 
 ObjectSeg RgbdSaliency::detectSingle(cv::Mat depth_image, cv::Mat rgb_image) {
@@ -153,24 +151,12 @@ ObjectSeg RgbdSaliency::processImageAndWrite(bool write, string rgb_path, Mat rg
   //boost::chrono::system_clock::time_point start;
   //start = boost::chrono::system_clock::now(); 
 
-    if (showDebug)
-        cout << "Fixed size: " << fixed_size << "\n";    
-
   cv::Size original_size = cv::Size(rgb_image.cols, rgb_image.rows);
   cv::resize(rgb_image, rgb_image, cv::Size(fixed_size, fixed_size));
-    if (showDebug)
-        cout << "Resized rgb: " << "\n";    
-
   cv::resize(depth_image, depth_image, cv::Size(fixed_size, fixed_size));
-    if (showDebug)
-        cout << "Depth rgb: " << "\n";      
   cv::resize(fill_image, fill_image, cv::Size(fixed_size, fixed_size));
-      if (showDebug)
-        cout << "Fill rgb: " << "\n";    
   cv::resize(gap_image, gap_image, cv::Size(fixed_size, fixed_size));
-    if (showDebug)
-        cout << "Gap rgb: " << "\n";      
-
+ 
   vector<Datum> input_rgb_datum;
   input_rgb_datum.emplace_back();
   CustomCVMatToDatum(rgb_image, &(input_rgb_datum[0]));
@@ -214,8 +200,9 @@ ObjectSeg RgbdSaliency::processImageAndWrite(bool write, string rgb_path, Mat rg
 
   if (write) {
     fs::path rgb_path_p(rgb_path);
-    fs::path savepath(save_dirpath);
+    fs::path savepath(save_dirpath);    
     processWrite(rgb_path_p, savepath, original_size, slic_blob, score_ptr);
+    return ObjectSeg();
   } else
     return processObjectSeg(original_size, slic_blob, score_ptr);
 }
@@ -246,7 +233,7 @@ void RgbdSaliency::processWrite(fs::path rgb_path_p, fs::path savepath, cv::Size
   fs::path filename(outimg);
   fs::path outputpath = savepath / outimg;
   imwrite(outputpath.string(), result);
-  cout << outputpath << endl;
+  cout << "Writed file " << outputpath.string() << endl;
 }
 
 ObjectSeg RgbdSaliency::processObjectSeg(cv::Size original_size, const boost::shared_ptr<Blob<float>> slic_blob, const float* score_ptr) {

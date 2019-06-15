@@ -20,10 +20,10 @@ int main(int argc, char *argv[]) {
       string save_dirpath = argv[5];
 
       RgbdSaliency *rgbdSaliency = new RgbdSaliency(true, net_proto_path, net_binary_path, rgb_dirpath, depth_dirpath, save_dirpath);
-      Mat rgb_image = cv::imread(rgb_dirpath);
-      Mat depth_image = cv::imread(depth_dirpath);
-      /*rgbdSaliency->detectAndWriteSingle(depth_image, rgb_image);*/
-      rgbdSaliency->detectSingle(depth_image, rgb_image);      
+      //Mat rgb_image = cv::imread(rgb_dirpath);
+      //Mat depth_image = cv::imread(depth_dirpath);
+      rgbdSaliency->detectAndWriteSingle();
+      //rgbdSaliency->detectSingle(depth_image, rgb_image);      
   } else
     return -1;  
 
